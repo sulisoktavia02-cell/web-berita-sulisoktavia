@@ -1,6 +1,7 @@
 $(document).ready(function () {
   const API_KEY = '12078d0f9bca43f58e2d7459afb66660';
   const BASE_URL = 'https://newsapi.org/v2';
+  const PROXY_URL = 'https://api.allorigins.win/get?url='; // ✅ Proxy gratis untuk bypass CORS
   const newsContainer = $('#news-container');
   let currentCategory = 'general';
 
@@ -34,11 +35,17 @@ $(document).ready(function () {
       </div>
     `);
 
-    let url = searchTerm
+    let targetUrl = searchTerm
       ? `${BASE_URL}/everything?q=${encodeURIComponent(searchTerm)}&sortBy=publishedAt&apiKey=${API_KEY}`
       : `${BASE_URL}/top-headlines?category=${category}&country=us&apiKey=${API_KEY}`;
 
-    $.getJSON(url, function (data) {
+    // ✅ Bungkus dengan proxy agar lolos CORS
+    let url = `${PROXY_URL}${encodeURIComponent(targetUrl)}`;
+
+    $.getJSON(url, function (response) {
+      // Karena proxy mengembalikan data di response.contents (string JSON), kita perlu parse ulang
+      const data = JSON.parse(response.contents);
+
       if (data.articles && data.articles.length > 0) {
         displayNews(data.articles);
       } else {

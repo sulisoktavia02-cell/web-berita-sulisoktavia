@@ -1,7 +1,7 @@
 $(document).ready(function () {
   const API_KEY = '12078d0f9bca43f58e2d7459afb66660';
   const BASE_URL = 'https://newsapi.org/v2';
-  const PROXY = 'https://corsproxy.io/?'; 
+  const PROXY = 'https://corsproxy.io/?';
   const newsContainer = $('#news-container');
   let currentCategory = 'general';
 
@@ -9,8 +9,10 @@ $(document).ready(function () {
   let likedArticles = JSON.parse(localStorage.getItem('likedArticles')) || [];
   let bookmarkedArticles = JSON.parse(localStorage.getItem('bookmarkedArticles')) || [];
 
+  // Panggil kategori awal
   fetchNews(currentCategory);
 
+  // Event klik kategori
   $('.category-btn').on('click', function () {
     $('.category-btn').removeClass('active');
     $(this).addClass('active');
@@ -18,15 +20,18 @@ $(document).ready(function () {
     fetchNews(currentCategory);
   });
 
+  // Event tombol cari
   $('#search-btn').on('click', function () {
     const term = $('#search-input').val().trim();
     if (term) fetchNews(currentCategory, term);
   });
 
+  // Tekan Enter untuk cari
   $('#search-input').on('keypress', function (e) {
     if (e.which === 13) $('#search-btn').click();
   });
 
+  // Fungsi ambil berita
   function fetchNews(category, searchTerm = '') {
     newsContainer.html(`
       <div class="loading text-center py-5">
@@ -39,12 +44,10 @@ $(document).ready(function () {
       ? `${BASE_URL}/everything?q=${encodeURIComponent(searchTerm)}&sortBy=publishedAt&apiKey=${API_KEY}`
       : `${BASE_URL}/top-headlines?category=${category}&country=us&apiKey=${API_KEY}`;
 
-    // Bungkus dengan corsproxy.io — letakkan URL target setelah tanda tanya
-    // encodeURIComponent aman untuk digunakan di sini
+    // Gunakan proxy CORS
     let url = `${PROXY}${encodeURIComponent(targetUrl)}`;
 
     $.getJSON(url, function (data) {
-      // corsproxy.io meneruskan JSON asli, jadi langsung pakai `data`
       if (data.articles && data.articles.length > 0) {
         displayNews(data.articles);
       } else {
@@ -56,22 +59,28 @@ $(document).ready(function () {
         `);
       }
     }).fail(function (xhr, status, error) {
-      console.error("Error:", error);
+      // Tampilkan detail error di layar untuk debugging
+      console.error("Error detail:", xhr, status, error);
       newsContainer.html(`
         <div class="text-center text-danger py-5">
           <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
-          <p>Gagal memuat berita. Periksa koneksi atau API key Anda.</p>
+          <p><b>Gagal memuat berita!</b></p>
+          <p>Status: ${status}</p>
+          <p>Error: ${error}</p>
+          <p>Response: ${xhr.responseText || 'Tidak ada respon dari server (mungkin CORS atau API key diblokir)'}</p>
+          <p style="color: gray; font-size: 14px;">Coba aktifkan proxy di https://cors-anywhere.herokuapp.com/corsdemo atau gunakan backend proxy sendiri.</p>
         </div>
       `);
     });
   }
 
+  // Fungsi tampilkan berita
   function displayNews(articles) {
     newsContainer.empty();
     articles.forEach((a) => {
       const date = new Date(a.publishedAt).toLocaleDateString();
       const imgUrl = a.urlToImage || 'https://placehold.co/400x200?text=No+Image';
-      const newsUrl = a.url ? a.url : '#';
+      const newsUrl = a.url || '#';
 
       const isLiked = likedArticles.includes(a.title);
       const isBookmarked = bookmarkedArticles.includes(a.title);
@@ -103,6 +112,7 @@ $(document).ready(function () {
       newsContainer.append(card);
     });
 
+    // Event tombol Like
     $('.like-btn').off('click').on('click', function () {
       const title = $(this).data('title');
       if (likedArticles.includes(title)) {
@@ -115,6 +125,7 @@ $(document).ready(function () {
       localStorage.setItem('likedArticles', JSON.stringify(likedArticles));
     });
 
+    // Event tombol Bookmark
     $('.bookmark-btn').off('click').on('click', function () {
       const title = $(this).data('title');
       if (bookmarkedArticles.includes(title)) {

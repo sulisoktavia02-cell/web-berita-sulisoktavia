@@ -1,0 +1,43 @@
+/* === Like & Bookmark Button Styling === */
+.action-icons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.action-icons i {
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: #bbb; /* abu muda default */
+  transition: all 0.3s ease;
+}
+
+/* Hover efek lembut */
+.action-icons i:hover {
+  transform: scale(1.2);
+  color: var(--secondary);
+}
+
+/* Saat sudah di-Like */
+.like-btn.liked {
+  color: var(--secondary);
+  text-shadow: 0 0 8px rgba(29, 91, 153, 0.6);
+}
+
+/* Saat sudah di-Bookmark */
+.bookmark-btn.bookmarked {
+  color: var(--primary);
+  text-shadow: 0 0 8px rgba(13, 59, 102, 0.5);
+}
+
+/* Animasi kecil saat diklik */
+@keyframes pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+.like-btn.liked,
+.bookmark-btn.bookmarked {
+  animation: pop 0.3s ease;
+}

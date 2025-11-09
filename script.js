@@ -1,7 +1,7 @@
 $(document).ready(function () {
   const API_KEY = '12078d0f9bca43f58e2d7459afb66660';
   const BASE_URL = 'https://newsapi.org/v2';
-  const PROXY = 'https://corsproxy.io/?'; 
+  const PROXY_URL = 'https://cors-anywhere.herokuapp.com/'; // ✅ Ganti proxy ke CORS Anywhere
   const newsContainer = $('#news-container');
   let currentCategory = 'general';
 
@@ -39,12 +39,10 @@ $(document).ready(function () {
       ? `${BASE_URL}/everything?q=${encodeURIComponent(searchTerm)}&sortBy=publishedAt&apiKey=${API_KEY}`
       : `${BASE_URL}/top-headlines?category=${category}&country=us&apiKey=${API_KEY}`;
 
-    // Bungkus dengan corsproxy.io — letakkan URL target setelah tanda tanya
-    // encodeURIComponent aman untuk digunakan di sini
-    let url = `${PROXY}${encodeURIComponent(targetUrl)}`;
+    // ✅ Bungkus dengan proxy agar lolos CORS
+    let url = `${PROXY_URL}${targetUrl}`;
 
     $.getJSON(url, function (data) {
-      // corsproxy.io meneruskan JSON asli, jadi langsung pakai `data`
       if (data.articles && data.articles.length > 0) {
         displayNews(data.articles);
       } else {

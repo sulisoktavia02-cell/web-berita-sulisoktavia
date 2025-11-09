@@ -1,7 +1,7 @@
 $(document).ready(function () {
   const API_KEY = '12078d0f9bca43f58e2d7459afb66660';
   const BASE_URL = 'https://newsapi.org/v2';
-  const PROXY = 'https://corsproxy.io/?';
+  const PROXY = 'https://api.allorigins.win/get?url=';
   const newsContainer = $('#news-container');
   let currentCategory = 'general';
 
@@ -44,22 +44,32 @@ $(document).ready(function () {
       ? `${BASE_URL}/everything?q=${encodeURIComponent(searchTerm)}&sortBy=publishedAt&apiKey=${API_KEY}`
       : `${BASE_URL}/top-headlines?category=${category}&country=us&apiKey=${API_KEY}`;
 
-    // Gunakan proxy CORS
+    // Bungkus dengan proxy AlOrigins
     let url = `${PROXY}${encodeURIComponent(targetUrl)}`;
 
-    $.getJSON(url, function (data) {
-      if (data.articles && data.articles.length > 0) {
-        displayNews(data.articles);
-      } else {
+    $.getJSON(url, function (response) {
+      try {
+        const data = JSON.parse(response.contents); // data asli ada di "contents"
+        if (data.articles && data.articles.length > 0) {
+          displayNews(data.articles);
+        } else {
+          newsContainer.html(`
+            <div class="text-center text-muted py-5">
+              <i class="fas fa-newspaper fa-2x mb-2"></i>
+              <p>Tidak ada berita ditemukan.</p>
+            </div>
+          `);
+        }
+      } catch (e) {
+        console.error('Gagal parsing JSON:', e);
         newsContainer.html(`
-          <div class="text-center text-muted py-5">
-            <i class="fas fa-newspaper fa-2x mb-2"></i>
-            <p>Tidak ada berita ditemukan.</p>
+          <div class="text-center text-danger py-5">
+            <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+            <p>Gagal memuat berita (format tidak valid).</p>
           </div>
         `);
       }
     }).fail(function (xhr, status, error) {
-      // Tampilkan detail error di layar untuk debugging
       console.error("Error detail:", xhr, status, error);
       newsContainer.html(`
         <div class="text-center text-danger py-5">
@@ -68,7 +78,7 @@ $(document).ready(function () {
           <p>Status: ${status}</p>
           <p>Error: ${error}</p>
           <p>Response: ${xhr.responseText || 'Tidak ada respon dari server (mungkin CORS atau API key diblokir)'}</p>
-          <p style="color: gray; font-size: 14px;">Coba aktifkan proxy di https://cors-anywhere.herokuapp.com/corsdemo atau gunakan backend proxy sendiri.</p>
+          <p style="color: gray; font-size: 14px;">Coba aktifkan proxy di https://api.allorigins.win atau gunakan backend proxy sendiri.</p>
         </div>
       `);
     });
